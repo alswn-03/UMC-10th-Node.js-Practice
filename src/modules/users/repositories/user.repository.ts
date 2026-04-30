@@ -1,3 +1,4 @@
+/*DB 직접 접근 - SQL*/
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { pool } from "../../../db.config.js";
 
