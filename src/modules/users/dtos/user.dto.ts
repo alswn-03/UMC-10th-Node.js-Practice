@@ -1,3 +1,5 @@
+/* 데이터를 원하는 형태로 바꿔준다*/
+
 // 1. 회원가입 요청 데이터의 설계도를 만듭니다.
 export interface UserSignUpRequest {
   email: string;
@@ -12,6 +14,7 @@ export interface UserSignUpRequest {
 
 
 // 2. 요청받은 데이터를 우리 시스템에 맞는 데이터로 변환해주는 함수입니다. 
+// 클라이언트의 요청 데이터를 서버 내부에서 쓰기 좋게 하려고
 export const bodyToUser = (body: UserSignUpRequest) => {
   const birth = new Date(body.birth); //날짜 변환
 
@@ -28,6 +31,7 @@ export const bodyToUser = (body: UserSignUpRequest) => {
 };
 
 // 3. DB에서 가져온 유저 정보 + 선호 카테고리 목록을 클라이언트 응답 형태로 변환
+// DB에서 가져온 결과를 클라이언트에게 보여줄 응답 형태로 바꾸려고
 export const responseFromUser = ({
     user,
     preferences,
