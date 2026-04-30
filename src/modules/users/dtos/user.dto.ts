@@ -3,6 +3,7 @@
 // 1. 회원가입 요청 데이터의 설계도를 만듭니다.
 export interface UserSignUpRequest {
   email: string;
+  password: string, // 🔥 비밀번호 해싱
   name: string;
   gender: string;
   birth: Date;
@@ -20,6 +21,7 @@ export const bodyToUser = (body: UserSignUpRequest) => {
 
   return {
     email: body.email, //필수 
+    password: body.password, // 🔥 비밀번호 해싱
     name: body.name, // 필수
     gender: body.gender, // 필수
     birth, // 필수

@@ -1,5 +1,7 @@
 import { UserSignUpRequest } from "../dtos/user.dto.js"; //인터페이스 가져오기 
 import { responseFromUser } from "../dtos/user.dto.js";
+import bcrypt from "bcrypt";  // 🔥 비밀번호 해싱
+
 import {
   addUser,
   getUser,
@@ -8,7 +10,13 @@ import {
 } from "../repositories/user.repository.js";
 
 
+
 export const userSignUp = async (data: UserSignUpRequest) => {
+  
+  const saltRounds = 10;
+  // 🔥 비밀번호 해싱
+  const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+
   const joinUserId = await addUser({
     email: data.email,
     name: data.name,
@@ -17,6 +25,7 @@ export const userSignUp = async (data: UserSignUpRequest) => {
     address: data.address,
     detailAddress: data.detailAddress,
     phoneNumber: data.phoneNumber,
+    password: hashedPassword, // 🔥 해싱된 값 저장
   });
 
   if (joinUserId === null) {
