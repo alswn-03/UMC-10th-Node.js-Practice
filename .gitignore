@@ -4,3 +4,7 @@ node_modules/
 # dotenv environment variable files
 .env
 .env.*
+
+# .postman/ 은 절대 올리지마
+.postman/
+postman/
