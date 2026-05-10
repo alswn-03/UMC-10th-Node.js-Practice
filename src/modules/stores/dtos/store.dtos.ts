@@ -1,3 +1,30 @@
+
+// -- 1-1. 리뷰 목록(list) 조회하기 (cursor 방식)
+export interface ReviewItem {
+    id: number;
+    body: string;
+    score: number;
+    storeId: number;
+    userId: number;
+    store: any, // string | null
+    user: any, // string | null
+};
+export interface ReviewListResponse {
+    data: ReviewItem[];
+    pagination: {cursor: number | null;};
+};
+export const responseFromReviews = (
+    reviews: ReviewItem[]
+): ReviewListResponse => {
+    const lastReview = reviews[reviews.length - 1];
+  
+    return {
+        data: reviews,
+        pagination: {cursor: lastReview ? lastReview.id : null},
+    };
+};
+
+
 // -- 1-2. 가게에 리뷰 작성하기
 // review 작성, 요청 타입
 export interface AddReviewRequest {

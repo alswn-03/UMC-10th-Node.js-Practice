@@ -8,3 +8,4 @@ node_modules/
 # .postman/ 은 절대 올리지마
 .postman/
 postman/
+/src/generated/prisma

@@ -2,8 +2,10 @@ import dotenv from "dotenv";
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 
-import { handleUserSignUp } from "./modules/users/controllers/user.controller.js"; //
-import { handleAddReview, handleAddMission, handleChallengeMission } from "./modules/stores/controllers/store.controller.js"; // ✅ week05-mission
+import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
+
+import { handleListStoreReviews, handleAddReview, handleAddMission, handleChallengeMission } from "./modules/stores/controllers/store.controller.js"; // ✅ week05-mission
+
 
 /**
  * ========================================
@@ -31,17 +33,20 @@ app.use(express.static('public'));    // 정적 파일 접근
 app.use(express.json());              // request의 본문을 json으로 해석할 수 있도록 함(JSON 형태의 요청 body를 파싱하기 위함)     
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
 
+
 // 4️⃣ API 라우트 정의
 // 각 엔드포인트별로 컨트롤러 함수를 연결합니다
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World! This is TypeScript Server!");
 });
 
-// POST 라우트들
+
+app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews); // 리뷰 목록 조회(가게 기준)
 app.post("/api/v1/stores/reviews", handleAddReview); // 5️⃣ 리뷰 추가
 app.post("/api/v1/users/signup", handleUserSignUp); // 사용자 회원가입
 app.post("/api/v1/stores/missions", handleAddMission); // 미션 추가
 app.post("/api/v1/missions/challenge", handleChallengeMission); // 미션 도전
+
 
 // 5️⃣ 서버 실행
 // 설정된 포트에서 서버를 시작하고 요청을 대기합니다

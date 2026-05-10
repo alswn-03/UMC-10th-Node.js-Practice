@@ -32,20 +32,30 @@ export const bodyToUser = (body: UserSignUpRequest) => {
   };
 };
 
+
 // 3. DB에서 가져온 유저 정보 + 선호 카테고리 목록을 클라이언트 응답 형태로 변환
 // DB에서 가져온 결과를 클라이언트에게 보여줄 응답 형태로 바꾸려고
-export const responseFromUser = ({
-    user,
-    preferences,
-}: {
+export interface UserSignUpResponse {
+  email: string;
+  name: string;
+  preferCategory: string[];
+}
+export const responseFromUser = (
+  data: {
     user: any;
     preferences: any[];
-}) => {
+  }
+): UserSignUpResponse => {
 
   return {
-    email: user.email,
-    name: user.name,
-    preferCategory: preferences.map((preference) => preference.name)
+    email: data.user.email,
+    name: data.user.name,
+    preferCategory: data.preferences.map(
+      (p) => p.foodCategory.name
+    ),
   };
 };
 
+// 배열.map((각요소) => {
+//   return 변환값;
+// })

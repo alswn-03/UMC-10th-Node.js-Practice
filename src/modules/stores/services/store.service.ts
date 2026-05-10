@@ -1,13 +1,34 @@
 import { 
-    getStoreById, 
-    addReview, 
-    addMission,
-    getMissionById,
-    checkUserMissionExists,
-    addUserMission,
- } from "../repositories/store.repository.js";
+  getStoreById, 
+  getAllStoreReviews,
+  addReview, 
+  addMission,
+  getMissionById,
+  checkUserMissionExists,
+  addUserMission,
+} from "../repositories/store.repository.js";
 
-// ✅ 1-2. 리뷰 작성하기
+import {
+  ReviewListResponse,
+  responseFromReviews,
+} from "../dtos/store.dtos.js";
+
+
+// ✅ 1-1. 특정 가게의 리뷰 목록(list) 조회하기 (cursor 방식)
+// listStoreReviews Service에서는 
+// 단순히 Repository를 호출하고, 
+// 이를 DTO로 변환해 반환하는 로직을 구현
+export const listStoreReviews = async ( // 📌 controller에서 호출 되는 함수
+  storeId: number,
+  cursor: number
+): Promise<ReviewListResponse> => { // DTO ReviewListResponse 인터페이스
+  const reviews = await getAllStoreReviews(storeId, cursor); // 📌 Repository에서 리뷰 목록을 가져옴
+  return responseFromReviews(reviews); // Repository에서 가져온 리뷰 데이터를 DTO로 변환하여 반환
+};
+
+
+
+ // ✅ 1-2. 리뷰 작성하기
 export const createReview = async (data: any) => {
   const userId = 1; // 과제 조건: 특정 사용자
 

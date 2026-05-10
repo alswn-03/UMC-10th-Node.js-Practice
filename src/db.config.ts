@@ -14,7 +14,6 @@ export const pool = mysql.createPool({ // MySQL DB에 연결하기 위해 Connec
 
   database: process.env.DB_NAME, // 데이터베이스 이름
   password: process.env.DB_PASSWORD, // 비밀번호 
-  // database: process.env.DB_NAME || "umc_10th", // 데이터베이스 이름
   // password: process.env.DB_PASSWORD || "password", // 비밀번호
 
 
@@ -28,3 +27,23 @@ export const pool = mysql.createPool({ // MySQL DB에 연결하기 위해 Connec
 
 // console.log("DB_PASSWORD:", process.env.DB_PASSWORD);
 // console.log("DB_NAME:", process.env.DB_NAME);
+
+
+//---week06------
+import "dotenv/config";
+import { PrismaClient } from "./generated/prisma/client.js";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+
+const adapter = new PrismaMariaDb({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
+  connectionLimit: 10,
+});
+
+export const prisma = new PrismaClient({
+  adapter,
+  log: ["query","info", "error", "warn"], // 쿼리 로그, 에러 로그, 경고 로그를 모두 출력하도록 설정
+});

@@ -1,6 +1,70 @@
 import { pool } from "../../../db.config.js";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 
+import { prisma } from "../../../db.config.js"; // 1-1
+
+
+// ✅ 1-1. 특정 가게의 리뷰 목록(list) 조회하기 (cursor 방식)
+// ✅ 1-1. 특정 가게의 리뷰 목록(list) 조회하기 (cursor 방식)
+export const getAllStoreReviews = async ( // 📌 service 에서 호출된다
+  storeId: number,
+  cursor: number
+) => {
+  const reviews = await prisma.review.findMany({
+    //ORM
+    select: {
+      // id: true 뜻 -> prisma 문법으로, review 테이블에서 id 필드(컬럼)만 선택해서 가져오겠다
+      id: true,
+      body: true,
+      score: true,
+      storeId: true,
+      userId: true,
+
+      // review와 relation(관계)을 맺고 있는
+      // store 테이블 데이터도 함께 조회
+      store: true,
+
+      // review와 relation(관계)을 맺고 있는
+      // user 테이블 데이터도 함께 조회
+      user: true,
+    },
+
+    where: { 
+      storeId: BigInt(storeId), // Prisma의 BigInt 타입과 맞추기 위해 BigInt로 변환
+
+      // cursor 기반 페이지네이션
+      // cursor 값보다 id가 큰 리뷰만 조회
+      id: {
+        gt: BigInt(cursor),
+      },
+    },
+
+    // id 기준 오름차순 정렬
+    orderBy: { id: "asc" },
+
+    // limit 5
+    // take 옵션을 이용해 한 번에 가져올 리뷰 수를 제한
+    take: 5,
+  });
+
+  // Prisma는 BigInt 타입을 반환하는데
+  // JSON 응답에서는 BigInt를 사용할 수 없으므로
+  // Number 타입으로 변환
+  return reviews.map((review) => ({
+    ...review,
+
+    // bigint → number 변환
+    id: Number(review.id),
+    storeId: Number(review.storeId),
+    store: review.store ? {
+      ...review.store,
+      id: Number(review.store.id),
+      regionId: Number(review.store.regionId),
+    } : null,
+  }));
+};
+
+
 // ✅ 1-2. 가게에 리뷰 작성하기
 // 1. store 존재 확인
 export const getStoreById = async (storeId: number) => {
