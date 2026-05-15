@@ -56,7 +56,7 @@ export const addUser = async (data: any): Promise<number | null> => {
 //       ]
 //     );
 
-    return createdUser.id;
+    return Number(createdUser.id);
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
   }

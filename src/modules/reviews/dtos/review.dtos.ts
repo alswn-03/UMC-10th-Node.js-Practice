@@ -1,13 +1,23 @@
-
 // -- 1-1. 리뷰 목록(list) 조회하기 (cursor 방식)
+export interface ReviewStore {
+    id: number;
+    name: string | null;
+    address: string | null;
+    regionId: number;
+}
+
+export interface ReviewUser {
+    id: number;
+    name: string;
+    email: string;
+}
+
 export interface ReviewItem {
     id: number;
     body: string;
     score: number;
-    storeId: number;
-    userId: number;
-    store: any, // string | null
-    user: any, // string | null
+    store: ReviewStore | null;
+    user: ReviewUser | null;
 };
 export interface ReviewListResponse {
     data: ReviewItem[];
@@ -40,30 +50,3 @@ export const bodyToReview = (body: AddReviewRequest) => {
         score: body.score,
     }
 }
-
-//-- 1-3. 가게에 미션 추가하기
-export interface AddMissionRequest {
-    storeId: number;
-    reward: number;
-    deadline: string;
-    missionSpec: string;
-}
-export const bodyToMission = (body: AddMissionRequest) => {
-    return {
-        storeId: body.storeId,
-        reward: body.reward,
-        deadline: new Date(body.deadline),
-        missionSpec: body.missionSpec,
-    };
-};
-
-// -- 1-4. 가게의 미션을 '도전 중인 미션'에 추가하기
-export interface ChallengeMissionRequest {
-  missionId: number;
-}
-
-export const bodyToChallengeMission = (body: ChallengeMissionRequest) => {
-  return {
-    missionId: body.missionId,
-  };
-};

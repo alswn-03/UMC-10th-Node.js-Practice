@@ -4,10 +4,9 @@ import { bodyToUser, UserSignUpRequest } from "../dtos/user.dto.js";
 import { userSignUp } from "../services/user.service.js";
 
 
-/* 로그인 기능
-req를 받아서 bodyToUser로 변환시키고 
--> userSignup 서비스를 호출 해서 
--> 결과를 res.status(...).json(...)으로 클라이언트에 보내기 */
+// ✅ 사용자 회원가입
+// 🔗 API: POST /api/v1/users/signup
+// 📝 body: { email, name, gender, birth, address, detailAddress, phoneNumber, password }
 export const handleUserSignUp = async (req: Request, res: Response, next: NextFunction ) => {
     console.log("회원가입을 요청했습니다!");
     console.log("body:", req.body); // 값이 잘 들어오나 확인하기 위한 테스트용

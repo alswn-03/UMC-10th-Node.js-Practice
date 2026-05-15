@@ -33,6 +33,7 @@
 - 운영 환경에서는 `db push` , `reset` 사용을 지양합니다.
 - 충돌 방지를 위해 PR에 `schema.prisma`와 `migrations/*`가 **세트로 들어가야** 합니다.
 */
+
 // ✅ Prisma Client 도구
 /*
 - npx prisma generate
