@@ -8,7 +8,8 @@ export const addUser = async (data: any): Promise<number | null> => {
 
 
   try {
-    // 1. 이미 존재하는 이메일인지 확인
+
+// ✅ 1. 이미 존재하는 이메일인지 확인
     const existingUser = await prisma.user.findUnique({
       where: {
         email: data.email,
@@ -18,16 +19,16 @@ export const addUser = async (data: any): Promise<number | null> => {
     if (existingUser) {
       return null;
     }
-//     const [confirm] = await pool.query<RowDataPacket[]>(
-//       `SELECT EXISTS(SELECT 1 FROM user WHERE email = ?) as isExistEmail;`,
-//       [data.email]
-//     );
+//  const [confirm] = await pool.query<RowDataPacket[]>(
+//    `SELECT EXISTS(SELECT 1 FROM user WHERE email = ?) as isExistEmail;`,
+//    [data.email]
+//  );
 
-//     if (confirm[0]?.isExistEmail) {
-//       return null;
-//     }
+//  if (confirm[0]?.isExistEmail) {
+//    return null;
+//  }
 
-    // 2. User 생성
+// ✅ 2. DB에 insert - User 생성
     const createdUser = await prisma.user.create({
       data: {
         email: data.email,
@@ -40,32 +41,32 @@ export const addUser = async (data: any): Promise<number | null> => {
         password: data.password, // TODO: 비밀번호 해싱
       },
     });
-//     const [result] = await pool.query<ResultSetHeader>(
-//       `INSERT INTO user
-//       (email, name, gender, birth, address, detail_address, phone_number, password) 
-//       VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
-//       [
-//         data.email,
-//         data.name,
-//         data.gender,
-//         data.birth,
-//         data.address,
-//         data.detailAddress,
-//         data.phoneNumber,
-//         data.password, //  🔥 비밀번호 해싱
-//       ]
-//     );
+//  const [result] = await pool.query<ResultSetHeader>(
+//    `INSERT INTO user
+//    (email, name, gender, birth, address, detail_address, phone_number, password) 
+//    VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
+//    [
+//      data.email,
+//      data.name,
+//      data.gender,
+//      data.birth,
+//      data.address,
+//      data.detailAddress,
+//      data.phoneNumber,
+//      data.password, //  🔥 비밀번호 해싱
+//    ]
+//  );
 
     return Number(createdUser.id);
   } catch (err) {
     throw new Error(`오류가 발생했어요: ${err}`);
   }
-//     return result.insertId;
-//   } catch (err) {
-//     throw new Error(`오류가 발생했어요: ${err}`);
-//   } finally {
-//     conn.release();
-//   }
+//  return result.insertId;
+//} catch (err) {
+//  throw new Error(`오류가 발생했어요: ${err}`);
+//} finally {
+//  conn.release();
+//}
 
 };
 
@@ -98,12 +99,13 @@ export const getUserPreferencesByUserId = async (
   userId: number
 ) => {
   const preferences = await prisma.userFavorCategory.findMany({
+    where: {userId: userId},
+    include: {foodCategory: true}, // userFavorCategory와 관계를 맺고 있는 foodCategory 테이블을 자동으로 join해 name 필드를 가져온다
+    orderBy: {foodCategoryId: "asc"}
 /*  "SELECT ufc.id, ufc.food_category_id, ufc.user_id, fcl.name " +
     "FROM user_favor_category ufc JOIN food_category fcl on ufc.food_category_id = fcl.id " +
     "WHERE ufc.user_id = ? ORDER BY ufc.food_category_id ASC;",
       [userId]*/
-    where: {userId: userId},
-    include: {foodCategory: true}, // userFavorCategory와 관계를 맺고 있는 foodCategory 테이블을 자동으로 join해 name 필드를 가져온다
-    orderBy: {foodCategoryId: "asc"}
   });
+  return preferences;
 };
