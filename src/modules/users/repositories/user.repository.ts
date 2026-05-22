@@ -3,7 +3,6 @@ import { prisma } from "../../../db.config.js";
 
 // 1. User 데이터 삽입
 export const addUser = async (data: any): Promise<number | null> => {
-// export const addUser = async (data: any): Promise<number | null> => {
 //   const conn = await pool.getConnection();
 
 
@@ -74,23 +73,35 @@ export const addUser = async (data: any): Promise<number | null> => {
 
 // 2. 사용자 정보 조회
 export const getUser = async (userId: number) => {
-  const user = await prisma.user.findFirstOrThrow({ where: { id: userId } });
-  return user;
+// userId와 일치하는 사용자 1명을 DB에서 조회
+// findFirstOrThrow는 조건에 맞는 첫 번째 데이터를 찾고, 없으면 에러를 발생시킨다.
+  const user = await prisma.user.findFirstOrThrow({
+    where: { id: userId },
+    // SELECT * FROM user WHERE id = ?;
+  });
+
+  return user; // 조회한 사용자 정보를 반환
 };
 
 
 // 3. 음식 선호 카테고리 매핑
 export const setPreference = async (
-  userId: number, 
+  userId: number,
   foodCateforyId: number
 ) => {
+  // user_favor_category 테이블에 사용자-음식 카테고리 관계를 저장
   await prisma.userFavorCategory.create({
     data: {
-      userId: userId,
-      foodCategoryId: foodCateforyId,
-    }
+      userId: userId, // 어떤 사용자의 선호 카테고리인지 저장
+      foodCategoryId: foodCateforyId, // 사용자가 선호하는 음식 카테고리 id 저장
+
+    // INSERT INTO user_favor_category (user_id, food_category_id)
+    // VALUES (?, ?);
+    },
   });
 };
+
+
 
 
 // 4. 사용자 선호 카테고리 반환 : SQL의 join 처리

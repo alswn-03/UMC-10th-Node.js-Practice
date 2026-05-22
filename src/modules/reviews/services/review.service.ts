@@ -1,6 +1,7 @@
 import { 
   getStoreById, 
   getAllStoreReviews,
+  getAllMyReviews,
   addReview, 
 } from "../repositories/review.repository.js";
 
@@ -22,9 +23,17 @@ export const listStoreReviews = async ( // 📌 controller에서 호출 되는 �
   return responseFromReviews(reviews); // Repository에서 가져온 리뷰 데이터를 DTO로 변환하여 반환
 };
 
+// ✅ 1-2. 내가 작성한 리뷰 목록(list) 조회하기 (cursor 방식)
+export const listMyReviews = async(
+  userId: number,
+  cursor: number
+): Promise<ReviewListResponse> => {
+  const reviews = await getAllMyReviews(userId, cursor);
+  return responseFromReviews(reviews);
+};
 
 
- // ✅ 1-2. 리뷰 작성하기
+ // ✅ 2. 리뷰 작성하기
 export const createReview = async (data: any) => {
   const userId = 1; // 과제 조건: 특정 사용자
 

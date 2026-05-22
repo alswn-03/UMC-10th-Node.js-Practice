@@ -1,4 +1,4 @@
-// -- 1-1. 리뷰 목록(list) 조회하기 (cursor 방식)
+// -- 1. 리뷰 목록(list) 조회하기 (cursor 방식)
 export interface ReviewStore {
     id: number;
     name: string | null;

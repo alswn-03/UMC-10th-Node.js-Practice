@@ -4,8 +4,8 @@ import cors from "cors";
 
 // ✅ controller 함수들 import
 import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
-import { handleListStoreReviews, handleAddReview } from "./modules/reviews/controllers/review.controller.js";
-import { handleAddMission, handleChallengeMission } from "./modules/missions/controllers/mission.controller.js";
+import { handleListStoreReviews, handleAddReview, handleListMyReviews } from "./modules/reviews/controllers/review.controller.js";
+import { handleAddMission, handleChallengeMission, handleGetMissionsByStore, handleGetMissionByUser } from "./modules/missions/controllers/mission.controller.js";
 
 
 /**
@@ -41,12 +41,16 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello World! This is TypeScript Server!");
 });
 
-
-app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews); // 리뷰 목록 조회(가게 기준)
-app.post("/api/v1/stores/reviews", handleAddReview); // 5️⃣ 리뷰 추가
-app.post("/api/v1/users/signup", handleUserSignUp); // 사용자 회원가입
 app.post("/api/v1/stores/missions", handleAddMission); // 미션 추가
 app.post("/api/v1/missions/challenge", handleChallengeMission); // 미션 도전
+app.get("/api/v1/stores/:storeId/missions", handleGetMissionsByStore); // 가게별 미션 목록 조회
+app.get("/api/v1/me/missions", handleGetMissionByUser); // 내가 도전 중인 미션 목록 조회
+
+app.get("/api/v1/stores/:storeId/reviews", handleListStoreReviews); // 리뷰 목록 조회(가게 기준)
+app.get("/api/v1/me/reviews", handleListMyReviews); // 내가 작성한 리뷰 목록 조회
+app.post("/api/v1/stores/reviews", handleAddReview); // 5️⃣ 리뷰 추가
+
+app.post("/api/v1/users/signup", handleUserSignUp); // 사용자 회원가입
 
 
 // 5️⃣ 서버 실행
