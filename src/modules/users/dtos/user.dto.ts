@@ -1,6 +1,10 @@
 /* 데이터를 원하는 형태로 바꿔준다*/
 
-// 1. 회원가입 요청 데이터의 설계도를 만듭니다.
+// ❇️ 7주차 : Tsoa 방식으로 DTO 설계하기
+// 1. 별도로 존재하던 변환함수를 제거하고, interface만 남기도록 수정한다
+// 2. service 레이어 수정
+
+// 1. 요청 DTO
 export interface UserSignUpRequest {
   email: string;
   password: string, // 🔥 비밀번호 해싱
@@ -12,8 +16,6 @@ export interface UserSignUpRequest {
   phoneNumber: string;
   preferences: number[];
 }
-
-
 // 2.설계도(interface)대로 변환 함수
 // 클라이언트의 요청 데이터를 서버 내부에서 쓰기 좋게 하려고
 export const bodyToUser = (body: UserSignUpRequest) => {
