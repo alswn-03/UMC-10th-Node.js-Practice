@@ -8,13 +8,19 @@
 export interface UserSignUpRequest {
   /** 유저 이메일 (로그인 시 사용) */
   email: string;
-  password: string, // 🔥 비밀번호 해싱
+  /** 비밀번호 (서버에서 bcrypt로 해싱하여 저장) */
+  password: string;
   /** 유저 이름 */
   name: string;
+  /** 성별 (예: "male", "female") */
   gender: string;
+  /** 생년월일 (예: "1999-01-01") */
   birth: Date;
-  address?: string;       // ?가 붙으면 '없을 수도 있음(선택)'이라는 뜻이에요!
+  /** 기본 주소 (선택) */
+  address?: string;
+  /** 상세 주소 (선택) */
   detailAddress?: string;
+  /** 휴대폰 번호 (예: "010-1234-5678") */
   phoneNumber: string;
   /** 선호 카테고리 ID 배열 (예: [1, 2]) */
   preferences: number[];
@@ -47,8 +53,11 @@ export const bodyToUser = (body: UserSignUpRequest) => {
 // 3. DB에서 가져온 유저 정보 + 선호 카테고리 목록을 클라이언트 응답 형태로 변환
 // DB에서 가져온 결과를 클라이언트에게 보여줄 응답 형태로 바꾸려고
 export interface UserSignUpResponse {
+  /** 가입된 이메일 */
   email: string;
+  /** 가입된 유저 이름 */
   name: string;
+  /** 선택한 선호 카테고리 이름 배열 (예: ["한식", "중식"]) */
   preferCategory: string[];
 }
 /* ❇️ 7주차 

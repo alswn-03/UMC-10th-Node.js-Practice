@@ -1,73 +1,62 @@
-import {NextFunction, Request, Response} from "express";
-import {StatusCodes} from "http-status-codes";
+import { Body, Controller, Get, Path, Post, Query, Response, Route, Tags } from "tsoa";
 
-import {responseFromReviews, bodyToReview} from "../dtos/review.dtos.js";
-import {listStoreReviews, listMyReviews, createReview} from "../services/review.service.js";
+import {
+  AddReviewRequest,
+  AddReviewResponse,
+  ReviewListResponse,
+  bodyToReview,
+} from "../dtos/review.dtos.js";
+import { listStoreReviews, listMyReviews, createReview } from "../services/review.service.js";
+import { ApiResponse, ErrorResponse, success } from "../../../common/responses/response.js";
 
-// ✅ 1-1. 특정 가게의 리뷰 목록(list) 조회하기 (cursor 방식)
-// 🔗 API: GET /api/v1/stores/:storeId/reviews
-// 예시: GET /api/v1/stores/123/reviews?cursor=0
-export const handleListStoreReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => { // 리턴값 없다 (void)
-  try {
-    const storeId = parseInt(req.params.storeId as string, 10);
-    console.log("${storeId}의 리뷰 리스트 조회 요청");
 
-    const cursor = 
-      typeof req.query.cursor === "string"
-        ? parseInt(req.query.cursor, 10)
-        : 0// cursor가 없으면 0으로 간주
-
-    const reviews = await listStoreReviews(storeId, cursor) // 📌Service에서 리뷰 목록을 가져옴
-    res.status(StatusCodes.OK).json(reviews);
-
-  } catch (err) {
-    next(err);
+// ✅ 1-1 특정 가게의 리뷰 목록 조회 & 2. 리뷰 작성하기
+// /stores 경로를 공유하는 리뷰 관련 엔드포인트를 하나의 컨트롤러로 묶음
+@Route("stores")
+@Tags("Review")
+export class StoreReviewController extends Controller {
+  /**
+   * 특정 가게의 리뷰 목록을 cursor 기반 페이지네이션으로 조회합니다.
+   * @summary 가게 리뷰 목록 조회
+   */
+  @Get("{storeId}/reviews")
+  @Response<ErrorResponse>(400, "존재하지 않는 가게")
+  public async handleListStoreReviews(
+    @Path() storeId: number,
+    @Query() cursor?: number
+  ): Promise<ReviewListResponse> {
+    return listStoreReviews(storeId, cursor ?? 0);
   }
-};
 
-// ✅ 1-2. 내가 작성한 리뷰 목록(list) 조회하기 (cursor 방식)
-// 🔗 API: GET /api/v1/me/reviews
-// 예시: GET /api/v1/me/reviews?cursor=0
-export const handleListMyReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    //const userId = req.userId as number;  // 실제 구현에서는 인증 미들웨어에서 userId를 req 객체에 저장해야 함
-    const userId = parseInt(req.params.userId as string, 10);
-
-    console.log("내 리뷰 리스트 조회 요청");
-
-    const cursor =
-      typeof req.query.cursor === "string"
-      ? parseInt(req.query.cursor, 10)
-      : 0
-    const reviews  = await listMyReviews(userId, cursor);
-    res.status(StatusCodes.OK).json(reviews);
-  } catch (err) {
-    next(err);
+  /**
+   * 특정 가게에 리뷰를 작성합니다.
+   * @summary 리뷰 작성
+   */
+  @Post("reviews")
+  @Response<ErrorResponse>(400, "존재하지 않는 가게")
+  public async handleAddReview(
+    @Body() requestBody: AddReviewRequest
+  ): Promise<ApiResponse<AddReviewResponse>> {
+    const review = await createReview(bodyToReview(requestBody));
+    return success({ ...review, reviewId: Number(review.reviewId) });
   }
 }
 
-// ✅ 2. 리뷰 작성하기
-// 🔗 API: POST /api/v1/stores/reviews
-// 📝 body: { storeId: number, body: string, score: number }
-export const handleAddReview = async (req: Request, res: Response) => {
-    try {
-        console.log("리뷰 add 요청:", req.body);
 
-        const review = await createReview(bodyToReview(req.body));
-        res.status(StatusCodes.OK).json({
-            result: review,
-        });
-    } catch (err) {
-        res.status(StatusCodes.BAD_REQUEST).json({
-            message: (err as Error).message,
-        });
-    }
-};
+// ✅ 1-2 내가 작성한 리뷰 목록 조회하기
+@Route("me")
+@Tags("Review")
+export class MeReviewController extends Controller {
+  /**
+   * 내가 작성한 리뷰 목록을 cursor 기반 페이지네이션으로 조회합니다.
+   * @summary 내 리뷰 목록 조회
+   */
+  @Get("reviews")
+  @Response<ErrorResponse>(400, "존재하지 않는 사용자")
+  public async handleListMyReviews(
+    @Query() userId: number,
+    @Query() cursor?: number
+  ): Promise<ReviewListResponse> {
+    return listMyReviews(userId, cursor ?? 0);
+  }
+}
