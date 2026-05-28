@@ -6,14 +6,17 @@
 
 // 1. 요청 DTO
 export interface UserSignUpRequest {
+  /** 유저 이메일 (로그인 시 사용) */
   email: string;
   password: string, // 🔥 비밀번호 해싱
+  /** 유저 이름 */
   name: string;
   gender: string;
   birth: Date;
   address?: string;       // ?가 붙으면 '없을 수도 있음(선택)'이라는 뜻이에요!
   detailAddress?: string;
   phoneNumber: string;
+  /** 선호 카테고리 ID 배열 (예: [1, 2]) */
   preferences: number[];
 }
 /* ❇️ 7주차 

@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 import express, { Express, NextFunction, Request, Response } from "express";
-import cors from "cors";
 
 // ❇️ 7주차 미들웨어
 import morgan from 'morgan'; 
@@ -19,6 +18,13 @@ import { handleUserSignUp } from "./modules/users/controllers/user.controller.js
 import { handleListStoreReviews, handleAddReview, handleListMyReviews } from "./modules/reviews/controllers/review.controller.js";
 import { handleAddMission, handleChallengeMission, handleGetMissionsByStore, handleGetMissionByUser } from "./modules/missions/controllers/mission.controller.js";
 */
+
+// ❇️ 8주차
+import swaggerUi from "swagger-ui-express";
+import cors from "cors"; // 미들웨어
+
+import path from "path";
+import fs from "fs";
 
 
 
@@ -43,7 +49,7 @@ const port = process.env.PORT || 3000;
 // express.static(): /public 폴더의 정적 파일 제공
 // express.json(): JSON 형태의 요청 body를 파싱하기 위함
 // express.urlencoded(): URL-encoded 데이터 파싱
-app.use(cors());            // cors 방식 허용                 
+app.use(cors());            // 8️⃣주차 : cors 방식 허용 - 서로 다른 주소에 있는 서버와 웹 사이트들이 통신 허용          
 app.use(express.static('public'));    // 정적 파일 접근    
 
 // ❇️ req.body 에 클라이언트가 보낸 데이터를 파싱해서 넣어주는, 아주 중요한 미들웨어
@@ -59,6 +65,7 @@ app.use(cookieParser()); // ❇️ 요청에 포함된 쿠키 정보가 자동�
 // ❇️ 7주차 tsoa 방식으로 라우트 등록하기
 const router = express.Router();
 RegisterRoutes(router); // tsoa로 생성된 라우트 등록 함수 호출
+
 app.use("/api/v1", router); // 등록된 라우트를 Express 앱에 적용 (공통 URL 경로 설정)
 
 // ☑️ 각 엔드포인트별로 컨트롤러 함수를 연결합니다
@@ -97,6 +104,15 @@ app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
     });
   }
 });
+
+
+// ❇️ 8주차 swagger 세팅
+const swaggerFile = JSON.parse( // 1. TSOA가 생성한 swagger.json 읽어오기
+  fs.readFileSync(path.resolve("dist/swagger.json"), "utf8")
+);
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerFile)); // 2. Swagger UI 연결
+
 
 // 6️⃣ 서버 실행
 // 설정된 포트에서 서버를 시작하고 요청을 대기합니다

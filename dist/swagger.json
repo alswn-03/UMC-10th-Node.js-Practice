@@ -58,16 +58,50 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ApiResponse_null_": {
+				"properties": {
+					"resultType": {
+						"type": "string",
+						"enum": [
+							"SUCCESS"
+						],
+						"nullable": false
+					},
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"success": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					}
+				},
+				"required": [
+					"resultType",
+					"error",
+					"success"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"UserSignUpRequest": {
 				"properties": {
 					"email": {
-						"type": "string"
+						"type": "string",
+						"description": "유저 이메일 (로그인 시 사용)"
 					},
 					"password": {
 						"type": "string"
 					},
 					"name": {
-						"type": "string"
+						"type": "string",
+						"description": "유저 이름"
 					},
 					"gender": {
 						"type": "string"
@@ -90,7 +124,8 @@
 							"type": "number",
 							"format": "double"
 						},
-						"type": "array"
+						"type": "array",
+						"description": "선호 카테고리 ID 배열 (예: [1, 2])"
 					}
 				},
 				"required": [
@@ -126,8 +161,20 @@
 								}
 							}
 						}
+					},
+					"400": {
+						"description": "중복된 이메일 에러",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_null_"
+								}
+							}
+						}
 					}
 				},
+				"description": "회원가입 API",
+				"summary": "회원가입을 처리하는 엔드포인트입니다.",
 				"tags": [
 					"User"
 				],
