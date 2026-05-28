@@ -2,6 +2,10 @@ import dotenv from "dotenv";
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 
+// ❇️ 7주차 미들웨어
+import morgan from 'morgan'; 
+import cookieParser from 'cookie-parser';
+
 
 // ❇️ 7주차 tsoa 방식
 // tsoa로 생성된 라우트 등록 함수 import
@@ -33,15 +37,20 @@ dotenv.config();
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-// 3️⃣ 미들웨어 설정
+// 3️⃣ 미들웨어 설정(등록))
 // cors(): 다른 도메인의 요청 허용
 // express.static(): /public 폴더의 정적 파일 제공
 // express.json(): JSON 형태의 요청 body를 파싱하기 위함
 // express.urlencoded(): URL-encoded 데이터 파싱
 app.use(cors());            // cors 방식 허용                 
-app.use(express.static('public'));    // 정적 파일 접근      
+app.use(express.static('public'));    // 정적 파일 접근    
+
+// ❇️ req.body 에 클라이언트가 보낸 데이터를 파싱해서 넣어주는, 아주 중요한 미들웨어
 app.use(express.json());              // request의 본문을 json으로 해석할 수 있도록 함(JSON 형태의 요청 body를 파싱하기 위함)     
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
+
+app.use(morgan('dev'));  // 로그 포맷: dev
+app.use(cookieParser()); // ❇️ 요청에 포함된 쿠키 정보가 자동으로 파싱되어 req.cookies 객체에 저장
 
 
 // 4️⃣ API 라우트 정의
@@ -68,10 +77,6 @@ app.post("/api/v1/stores/reviews", handleAddReview); // 5️⃣ 리뷰 추가
 
 app.post("/api/v1/users/signup", handleUserSignUp); // 사용자 회원가입
 */
-
-
-
-
 
 // 5️⃣ 서버 실행
 // 설정된 포트에서 서버를 시작하고 요청을 대기합니다
