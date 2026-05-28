@@ -438,8 +438,11 @@ Routes 레이어의 4가지 핵심 역할은 다음과 같습니다.
 
 </br>
 ---
-# 👾 tsoa 이론 정리
 
+# 🚀 [week7 개인적인 정리본]
+
+---
+## 1. 👾 tsoa 이론 정리
 ---
 
 ## tsoa가 뭔데?
@@ -640,3 +643,173 @@ repository.ts (Prisma로 실제 DB 조작)
       ↓
 응답 반환 (UserSignUpResponse 타입)
 ```
+---
+## 2. API 응답 통일과 에러 핸들링
+---
+
+### 1. API 응답을 통일해야 하는 이유
+
+기존 API 응답은 다음과 같이 API마다 다른 형태로 내려올 수 있습니다.
+
+```json
+{
+  "result": {
+    "email": "test@example.com",
+    "name": "엘빈",
+    "preferCategory": ["과일", "생선"]
+  }
+}
+```
+
+API마다 응답 구조가 다르면 프론트엔드에서 처리하기 어려워집니다.
+따라서 성공 응답과 실패 응답의 형태를 미리 정해두고, 모든 API가 같은 형식으로 응답하도록 통일하는 것이 좋습니다.
+
+---
+
+### 2. 공통 응답 형식
+
+성공 응답은 다음과 같은 형태로 통일합니다.
+
+```json
+{
+  "resultType": "SUCCESS",
+  "error": null,
+  "success": {
+    ...
+  }
+}
+```
+
+실패 응답은 다음과 같은 형태로 통일합니다.
+
+```json
+{
+  "resultType": "FAIL",
+  "error": {
+    "errorCode": "U001",
+    "reason": "오류 원인",
+    "data": {
+      ...
+    }
+  },
+  "success": null
+}
+```
+
+각 필드의 의미는 다음과 같습니다.
+
+* `resultType`: 요청 성공 여부
+* `error`: 실패한 경우의 에러 정보
+* `errorCode`: 에러를 구분하기 위한 코드
+* `reason`: 에러 발생 이유
+* `data`: 에러와 관련된 추가 데이터
+* `success`: 성공한 경우의 실제 응답 데이터
+
+---
+
+### 3. 성공 응답 처리
+
+TSOA를 사용하면 최종 응답을 TSOA가 담당하기 때문에, Express 미들웨어만으로 모든 성공 응답을 통일하기 어렵습니다.
+
+그래서 성공 응답은 별도의 Wrapper 함수를 만들어 처리합니다.
+
+```ts
+export interface ApiResponse<T> {
+  resultType: "SUCCESS";
+  error: null;
+  success: T;
+}
+
+export const success = <T>(data: T): ApiResponse<T> => ({
+  resultType: "SUCCESS",
+  error: null,
+  success: data,
+});
+```
+
+컨트롤러에서는 다음과 같이 반환값을 `success()`로 감싸줍니다.
+
+```ts
+const user = await userSignUp(body);
+return success(user);
+```
+
+이렇게 하면 실제 응답 데이터가 항상 `success` 안에 담겨 내려갑니다.
+
+---
+
+### 4. 실패 응답 처리
+
+실패 응답은 전역 에러 처리 미들웨어를 통해 통일할 수 있습니다.
+
+다만 기본 `Error` 객체에는 `errorCode`, `statusCode`, `data` 같은 속성이 없기 때문에, 커스텀 에러 클래스를 만들어 사용합니다.
+
+```ts
+export class AppError extends Error {
+  public readonly errorCode: string;
+  public readonly statusCode: number;
+  public readonly data?: unknown;
+
+  constructor(params: {
+    errorCode: string;
+    message: string;
+    statusCode: number;
+    data?: unknown;
+  }) {
+    super(params.message);
+    this.errorCode = params.errorCode;
+    this.statusCode = params.statusCode;
+    this.data = params.data;
+  }
+}
+```
+
+예를 들어 이메일 중복 에러는 다음과 같이 따로 만들 수 있습니다.
+
+```ts
+export class DuplicateUserEmailError extends AppError {
+  constructor(message: string, data?: unknown) {
+    super({
+      errorCode: "U001",
+      statusCode: 409,
+      message,
+      data,
+    });
+  }
+}
+```
+
+서비스 로직에서는 에러 상황이 발생했을 때 이 커스텀 에러를 던집니다.
+
+```ts
+if (joinUserId === null) {
+  throw new DuplicateUserEmailError("이미 존재하는 이메일입니다.", data);
+}
+```
+
+그러면 전역 에러 처리 미들웨어에서 이 에러를 받아 공통 실패 응답 형태로 변환합니다.
+
+---
+
+### 5. 에러 코드를 분리하는 이유
+
+에러 코드를 분리하면 프론트엔드에서 오류 상황을 더 명확하게 처리할 수 있습니다.
+
+예를 들어 모든 오류가 단순히 `"unknown"`으로 내려오면, 프론트엔드는 사용자에게 “서버 오류가 발생했습니다.” 정도의 메시지만 보여줄 수 있습니다.
+
+하지만 에러 코드가 구체적으로 내려오면 다음과 같이 상황별 처리가 가능합니다.
+
+* `U001`: 이메일 중복
+* `U002`: 비밀번호 규칙 위반
+
+즉, 에러 코드를 분리하면 클라이언트에서 오류를 구분하기 쉽고, 사용자에게 더 구체적인 안내를 제공할 수 있습니다.
+
+---
+
+### 정리
+
+API 응답 통일은 프론트엔드와 백엔드가 일관된 방식으로 통신하기 위해 필요합니다.
+
+TSOA에서는 성공 응답을 `success()` 같은 Wrapper 함수로 감싸서 반환하고, 실패 응답은 `AppError` 기반 커스텀 에러와 전역 에러 처리 미들웨어를 통해 통일할 수 있습니다.
+
+결과적으로 API 응답 구조가 일정해지고, 에러 상황도 더 명확하게 관리할 수 있습니다.
