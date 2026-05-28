@@ -3,7 +3,7 @@
 import { Body, Controller, Post, Route, Tags } from "tsoa"; // ❇️ 7주차 tsoa
 
 
-import { bodyToUser, UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js";
+import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js";
 import { userSignUp } from "../services/user.service.js";
 
 
@@ -13,7 +13,7 @@ import { userSignUp } from "../services/user.service.js";
 
 // ✅ 7주차 tsoa 방식 
 // Controller, Route, Tags, Body 데코레이터 사용
-@Route("api/v1/users") // 공통 URL 경로 설정
+@Route("users") // index.ts에서 /api/v1 prefix가 이미 붙으므로 여기선 users만
 @Tags("User") // Swagger UI에서 사용할 태그 설정
 export class UserController extends Controller {
     @Post("signup") // HTTP POST 메서드와 URL 경로 설정
@@ -23,8 +23,10 @@ export class UserController extends Controller {
         console.log("회원가입을 요청했습니다!");
         console.log("body:", requestBody); // 값이 잘 들어오나 확인하기 위한 테스트용
 
-        const user = await userSignUp(bodyToUser(requestBody)); // Service 호출
-
+        const user = await userSignUp(requestBody); // Service 호출
+        // bodyToUser 함수는 이제 service 레이어에서 호출하므로, 여기서는 requestBody를 그대로 넘겨줍니다.
+        // 원래 bodyToUser(requestBody)의 역할은 요청 데이터를 서버 내부에서 쓰기 좋게 변환하는 것이었지만, 이제 service 레이어에서 DTO를 사용하여 변환하므로, controller에서는 requestBody를 그대로 넘겨줍니다.
+        
         return user; // 성공 응답 반환
     }
 }   

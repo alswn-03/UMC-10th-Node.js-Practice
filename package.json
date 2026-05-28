@@ -1,8 +1,8 @@
 {
  "scripts": {
   "test": "echo \"Error: no test specified\" && exit 1",
-  "start": "tsx src/index.ts",
-  "dev": "nodemon --exec tsx src/index.ts, prisma --exec \"npx prisma generate && tsx src/index.ts\""
+  "start": "tsoa spec-and-routes && tsx src/index.ts",
+  "dev": "tsoa spec-and-routes && nodemon --exec tsx src/index.ts, prisma --exec \"npx prisma generate && tsx src/index.ts\""
  },
  "dependencies": {
   "@prisma/adapter-mariadb": "^7.8.0",

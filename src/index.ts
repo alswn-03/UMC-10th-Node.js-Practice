@@ -2,10 +2,19 @@ import dotenv from "dotenv";
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
 
-// ✅ controller 함수들 import
+
+// ❇️ 7주차 tsoa 방식
+// tsoa로 생성된 라우트 등록 함수 import
+// 왜? tsoa는 컨트롤러의 메서드에 @Route, @Post, @Body 등 데코레이터를 사용하여 API 엔드포인트와 요청/응답 형식을 정의합니다. 그리고 tsoa CLI를 사용하여 이 정보를 기반으로 자동으로 라우트 핸들러 코드를 생성합니다. 이 생성된 코드에는 각 API 엔드포인트에 대한 라우트 핸들러가 포함되어 있으며, 이 핸들러는 컨트롤러의 메서드를 호출하도록 구현되어 있습니다. 따라서 우리가 직접 라우트를 정의할 필요 없이, tsoa가 생성한 라우트를 등록하는 함수만 호출하면 됩니다
+import {RegisterRoutes} from "./generated/routes.js"; // tsoa로 생성된 라우트 등록 함수 import
+
+// ☑️ controller 의 handler 함수 import
+/*
 import { handleUserSignUp } from "./modules/users/controllers/user.controller.js";
 import { handleListStoreReviews, handleAddReview, handleListMyReviews } from "./modules/reviews/controllers/review.controller.js";
 import { handleAddMission, handleChallengeMission, handleGetMissionsByStore, handleGetMissionByUser } from "./modules/missions/controllers/mission.controller.js";
+*/
+
 
 
 /**
@@ -36,7 +45,14 @@ app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형
 
 
 // 4️⃣ API 라우트 정의
-// 각 엔드포인트별로 컨트롤러 함수를 연결합니다
+
+// ❇️ 7주차 tsoa 방식으로 라우트 등록하기
+const router = express.Router();
+RegisterRoutes(router); // tsoa로 생성된 라우트 등록 함수 호출
+app.use("/api/v1", router); // 등록된 라우트를 Express 앱에 적용 (공통 URL 경로 설정)
+
+// ☑️ 각 엔드포인트별로 컨트롤러 함수를 연결합니다
+/*
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World! This is TypeScript Server!");
 });
@@ -51,6 +67,10 @@ app.get("/api/v1/me/reviews", handleListMyReviews); // 내가 작성한 리뷰 �
 app.post("/api/v1/stores/reviews", handleAddReview); // 5️⃣ 리뷰 추가
 
 app.post("/api/v1/users/signup", handleUserSignUp); // 사용자 회원가입
+*/
+
+
+
 
 
 // 5️⃣ 서버 실행
