@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express, { Express, Request, Response } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
 
 // ❇️ 7주차 미들웨어
@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 // tsoa로 생성된 라우트 등록 함수 import
 // 왜? tsoa는 컨트롤러의 메서드에 @Route, @Post, @Body 등 데코레이터를 사용하여 API 엔드포인트와 요청/응답 형식을 정의합니다. 그리고 tsoa CLI를 사용하여 이 정보를 기반으로 자동으로 라우트 핸들러 코드를 생성합니다. 이 생성된 코드에는 각 API 엔드포인트에 대한 라우트 핸들러가 포함되어 있으며, 이 핸들러는 컨트롤러의 메서드를 호출하도록 구현되어 있습니다. 따라서 우리가 직접 라우트를 정의할 필요 없이, tsoa가 생성한 라우트를 등록하는 함수만 호출하면 됩니다
 import {RegisterRoutes} from "./generated/routes.js"; // tsoa로 생성된 라우트 등록 함수 import
+import { AppError } from "./common/errors/AppError.js";
 
 // ☑️ controller 의 handler 함수 import
 /*
@@ -78,7 +79,26 @@ app.post("/api/v1/stores/reviews", handleAddReview); // 5️⃣ 리뷰 추가
 app.post("/api/v1/users/signup", handleUserSignUp); // 사용자 회원가입
 */
 
-// 5️⃣ 서버 실행
+// 5️⃣ 전역 에러 핸들러 (AppError → 표준 실패 응답)
+app.use((err: Error, _req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) return next(err);
+
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      resultType: "FAIL",
+      error: { errorCode: err.errorCode, reason: err.message, data: err.data ?? null },
+      success: null,
+    });
+  } else {
+    res.status(500).json({
+      resultType: "FAIL",
+      error: { errorCode: "UNKNOWN", reason: err.message, data: null },
+      success: null,
+    });
+  }
+});
+
+// 6️⃣ 서버 실행
 // 설정된 포트에서 서버를 시작하고 요청을 대기합니다
 app.listen(port, () => {
   console.log(`[server]: Server is running at <http://localhost>:${port}`);

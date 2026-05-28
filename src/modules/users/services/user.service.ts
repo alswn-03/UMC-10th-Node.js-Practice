@@ -1,4 +1,4 @@
-import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js"; //인터페이스 가져오기 
+import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js"; //인터페이스 가져오기
 // import { responseFromUser } from "../dtos/user.dto.js";
 import bcrypt from "bcrypt";  // 🔥 비밀번호 해싱
 
@@ -8,6 +8,7 @@ import {
   getUserPreferencesByUserId,
   setPreference,
 } from "../repositories/user.repository.js";
+import { AppError } from "../../../common/errors/AppError.js";
 
 
 
@@ -30,7 +31,11 @@ export const userSignUp = async (data: UserSignUpRequest) => {
   });
 
   if (joinUserId === null) {
-    throw new Error("이미 존재하는 이메일입니다.");
+    throw new AppError({
+      errorCode: "U001",
+      statusCode: 409,
+      message: "이미 존재하는 이메일입니다.",
+    });
   }
 
   for (const preference of data.preferences) {

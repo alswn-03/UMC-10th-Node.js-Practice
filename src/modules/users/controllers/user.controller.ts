@@ -2,9 +2,9 @@
 // import { StatusCodes } from "http-status-codes";
 import { Body, Controller, Post, Route, Tags } from "tsoa"; // ❇️ 7주차 tsoa
 
-
 import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js";
 import { userSignUp } from "../services/user.service.js";
+import { ApiResponse, success } from "../../../common/responses/response.js";
 
 
 // 사용자 회원가입
@@ -19,15 +19,12 @@ export class UserController extends Controller {
     @Post("signup") // HTTP POST 메서드와 URL 경로 설정
     public async handleUserSignUp(
         @Body() requestBody: UserSignUpRequest // 요청 본문을 UserSignUpRequest 타입으로 받음
-    ): Promise<UserSignUpResponse> { // 반환 타입 정의
+    ): Promise<ApiResponse<UserSignUpResponse>> { // 반환 타입 정의
         console.log("회원가입을 요청했습니다!");
         console.log("body:", requestBody); // 값이 잘 들어오나 확인하기 위한 테스트용
 
         const user = await userSignUp(requestBody); // Service 호출
-        // bodyToUser 함수는 이제 service 레이어에서 호출하므로, 여기서는 requestBody를 그대로 넘겨줍니다.
-        // 원래 bodyToUser(requestBody)의 역할은 요청 데이터를 서버 내부에서 쓰기 좋게 변환하는 것이었지만, 이제 service 레이어에서 DTO를 사용하여 변환하므로, controller에서는 requestBody를 그대로 넘겨줍니다.
-        
-        return user; // 성공 응답 반환
+        return success(user); // 성공 응답 반환
     }
 }   
 

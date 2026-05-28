@@ -30,6 +30,34 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ApiResponse_UserSignUpResponse_": {
+				"properties": {
+					"resultType": {
+						"type": "string",
+						"enum": [
+							"SUCCESS"
+						],
+						"nullable": false
+					},
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"success": {
+						"$ref": "#/components/schemas/UserSignUpResponse"
+					}
+				},
+				"required": [
+					"resultType",
+					"error",
+					"success"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"UserSignUpRequest": {
 				"properties": {
 					"email": {
@@ -94,7 +122,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/UserSignUpResponse"
+									"$ref": "#/components/schemas/ApiResponse_UserSignUpResponse_"
 								}
 							}
 						}
