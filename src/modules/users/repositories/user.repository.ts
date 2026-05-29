@@ -104,7 +104,33 @@ export const setPreference = async (
 
 
 
-// 4. 사용자 선호 카테고리 반환 : SQL의 join 처리
+// 4. 사용자 정보 수정
+export const updateUser = async (
+  userId: number,
+  data: {
+    name?: string;
+    gender?: string;
+    birth?: Date;
+    address?: string;
+    detailAddress?: string;
+    phoneNumber?: string;
+  }
+) => {
+  const updated = await prisma.user.update({
+    where: { id: BigInt(userId) },
+    data: {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.gender !== undefined && { gender: data.gender }),
+      ...(data.birth !== undefined && { birth: new Date(data.birth) }),
+      ...(data.address !== undefined && { address: data.address }),
+      ...(data.detailAddress !== undefined && { detailAddress: data.detailAddress }),
+      ...(data.phoneNumber !== undefined && { phoneNumber: data.phoneNumber }),
+    },
+  });
+  return updated;
+};
+
+// 5. 사용자 선호 카테고리 반환 : SQL의 join 처리
 
 export const getUserPreferencesByUserId = async (
   userId: number

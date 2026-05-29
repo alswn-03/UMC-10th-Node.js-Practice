@@ -1,5 +1,4 @@
-import { UserSignUpRequest, UserSignUpResponse } from "../dtos/user.dto.js"; //인터페이스 가져오기
-// import { responseFromUser } from "../dtos/user.dto.js";
+import { UserSignUpRequest, UserSignUpResponse, UserUpdateRequest, UserUpdateResponse } from "../dtos/user.dto.js";
 import bcrypt from "bcrypt";  // 🔥 비밀번호 해싱
 
 import {
@@ -7,6 +6,7 @@ import {
   getUser,
   getUserPreferencesByUserId,
   setPreference,
+  updateUser,
 } from "../repositories/user.repository.js";
 import { AppError } from "../../../common/errors/AppError.js";
 
@@ -51,5 +51,19 @@ export const userSignUp = async (data: UserSignUpRequest) => {
     email: user.email,
     name: user.name,
     preferCategory: preferences.map((p) => p.foodCategory.name),
-  }; 
+  };
+};
+
+
+export const updateUserProfile = async (
+  userId: number,
+  data: UserUpdateRequest
+): Promise<UserUpdateResponse> => {
+  const updated = await updateUser(userId, data);
+
+  return {
+    id: Number(updated.id),
+    email: updated.email,
+    name: updated.name,
+  };
 };

@@ -34,19 +34,14 @@ export const createMission = async (data: any) => {
 
 
 // ✅ 1-4. 가게의 미션을 '도전 중인 미션'에 추가하기
-export const challengeMission = async (data: any) => {
-  const userId = data.userId;
-
+export const challengeMission = async (data: { missionId: number }, userId: number) => {
   const mission = await getMissionById(data.missionId);
 
   if (!mission) {
     throw new Error("존재하지 않는 미션입니다.");
   }
 
-  const isAlreadyChallenging = await checkUserMissionExists(
-    userId,
-    data.missionId
-  );
+  const isAlreadyChallenging = await checkUserMissionExists(userId, data.missionId);
 
   if (isAlreadyChallenging) {
     throw new Error("이미 도전 중인 미션입니다.");

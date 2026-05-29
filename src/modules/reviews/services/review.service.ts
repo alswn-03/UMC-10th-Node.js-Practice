@@ -34,8 +34,7 @@ export const listMyReviews = async(
 
 
  // ✅ 2. 리뷰 작성하기
-export const createReview = async (data: any) => {
-  const userId = 1; // 과제 조건: 특정 사용자
+export const createReview = async (data: any, userId: number) => {
 
   // 1. 가게 존재 확인
   const store = await getStoreById(data.storeId);

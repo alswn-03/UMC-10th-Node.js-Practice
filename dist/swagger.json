@@ -61,21 +61,40 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ApiResponse_null_": {
+			"ErrorDetail": {
+				"properties": {
+					"errorCode": {
+						"type": "string",
+						"description": "에러 코드 (예: U001, M001)"
+					},
+					"reason": {
+						"type": "string",
+						"description": "에러 메시지"
+					},
+					"data": {
+						"nullable": true
+					}
+				},
+				"required": [
+					"errorCode",
+					"reason",
+					"data"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ErrorResponse": {
+				"description": "공통 실패 응답 형식.\ntsoa의",
 				"properties": {
 					"resultType": {
 						"type": "string",
 						"enum": [
-							"SUCCESS"
+							"FAIL"
 						],
 						"nullable": false
 					},
 					"error": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
+						"$ref": "#/components/schemas/ErrorDetail"
 					},
 					"success": {
 						"type": "number",
@@ -146,6 +165,89 @@
 					"phoneNumber",
 					"preferences"
 				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserUpdateResponse": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double",
+						"description": "유저 ID"
+					},
+					"email": {
+						"type": "string",
+						"description": "유저 이메일"
+					},
+					"name": {
+						"type": "string",
+						"description": "유저 이름"
+					}
+				},
+				"required": [
+					"id",
+					"email",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ApiResponse_UserUpdateResponse_": {
+				"properties": {
+					"resultType": {
+						"type": "string",
+						"enum": [
+							"SUCCESS"
+						],
+						"nullable": false
+					},
+					"error": {
+						"type": "number",
+						"enum": [
+							null
+						],
+						"nullable": true
+					},
+					"success": {
+						"$ref": "#/components/schemas/UserUpdateResponse"
+					}
+				},
+				"required": [
+					"resultType",
+					"error",
+					"success"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserUpdateRequest": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "유저 이름"
+					},
+					"gender": {
+						"type": "string",
+						"description": "성별 (예: \"male\", \"female\")"
+					},
+					"birth": {
+						"type": "string",
+						"format": "date-time",
+						"description": "생년월일 (예: \"1999-01-01\")"
+					},
+					"address": {
+						"type": "string",
+						"description": "기본 주소"
+					},
+					"detailAddress": {
+						"type": "string",
+						"description": "상세 주소"
+					},
+					"phoneNumber": {
+						"type": "string",
+						"description": "휴대폰 번호 (예: \"010-1234-5678\")"
+					}
+				},
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -278,57 +380,6 @@
 				"required": [
 					"data",
 					"pagination"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ErrorDetail": {
-				"properties": {
-					"errorCode": {
-						"type": "string",
-						"description": "에러 코드 (예: U001, M001)"
-					},
-					"reason": {
-						"type": "string",
-						"description": "에러 메시지"
-					},
-					"data": {
-						"nullable": true
-					}
-				},
-				"required": [
-					"errorCode",
-					"reason",
-					"data"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"ErrorResponse": {
-				"description": "공통 실패 응답 형식.\ntsoa의",
-				"properties": {
-					"resultType": {
-						"type": "string",
-						"enum": [
-							"FAIL"
-						],
-						"nullable": false
-					},
-					"error": {
-						"$ref": "#/components/schemas/ErrorDetail"
-					},
-					"success": {
-						"type": "number",
-						"enum": [
-							null
-						],
-						"nullable": true
-					}
-				},
-				"required": [
-					"resultType",
-					"error",
-					"success"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -653,11 +704,6 @@
 			},
 			"ChallengeMissionRequest": {
 				"properties": {
-					"userId": {
-						"type": "number",
-						"format": "double",
-						"description": "도전하는 유저 ID"
-					},
 					"missionId": {
 						"type": "number",
 						"format": "double",
@@ -665,7 +711,6 @@
 					}
 				},
 				"required": [
-					"userId",
 					"missionId"
 				],
 				"type": "object",
@@ -757,19 +802,19 @@
 							}
 						}
 					},
-					"400": {
-						"description": "중복된 이메일 에러",
+					"409": {
+						"description": "이미 존재하는 이메일",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/ApiResponse_null_"
+									"$ref": "#/components/schemas/ErrorResponse"
 								}
 							}
 						}
 					}
 				},
-				"description": "회원가입 API",
-				"summary": "회원가입을 처리하는 엔드포인트입니다.",
+				"description": "이메일, 비밀번호, 선호 카테고리 등을 입력받아 회원가입을 처리합니다.",
+				"summary": "회원가입",
 				"tags": [
 					"User"
 				],
@@ -781,6 +826,50 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UserSignUpRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/users/me": {
+			"patch": {
+				"operationId": "HandleUpdateUserProfile",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ApiResponse_UserUpdateResponse_"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "인증 실패",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "로그인한 사용자의 프로필 정보를 수정합니다.\nGoogle 로그인으로 가입한 경우 비어있는 생일, 전화번호 등을 채울 때 사용합니다.",
+				"summary": "내 프로필 수정",
+				"tags": [
+					"User"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserUpdateRequest"
 							}
 						}
 					}
@@ -863,9 +952,19 @@
 								}
 							}
 						}
+					},
+					"401": {
+						"description": "인증 실패",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
 					}
 				},
-				"description": "특정 가게에 리뷰를 작성합니다.",
+				"description": "특정 가게에 리뷰를 작성합니다. (로그인 필요)",
 				"summary": "리뷰 작성",
 				"tags": [
 					"Review"
@@ -898,8 +997,8 @@
 							}
 						}
 					},
-					"400": {
-						"description": "존재하지 않는 사용자",
+					"401": {
+						"description": "인증 실패",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -909,22 +1008,13 @@
 						}
 					}
 				},
-				"description": "내가 작성한 리뷰 목록을 cursor 기반 페이지네이션으로 조회합니다.",
+				"description": "내가 작성한 리뷰 목록을 cursor 기반 페이지네이션으로 조회합니다. (로그인 필요)",
 				"summary": "내 리뷰 목록 조회",
 				"tags": [
 					"Review"
 				],
 				"security": [],
 				"parameters": [
-					{
-						"in": "query",
-						"name": "userId",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
 					{
 						"in": "query",
 						"name": "cursor",
@@ -960,9 +1050,19 @@
 								}
 							}
 						}
+					},
+					"401": {
+						"description": "인증 실패",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
 					}
 				},
-				"description": "특정 가게에 새로운 미션을 추가합니다.",
+				"description": "특정 가게에 새로운 미션을 추가합니다. (로그인 필요)",
 				"summary": "가게 미션 추가",
 				"tags": [
 					"Mission"
@@ -1058,6 +1158,16 @@
 							}
 						}
 					},
+					"401": {
+						"description": "인증 실패",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
 					"409": {
 						"description": "이미 도전 중인 미션",
 						"content": {
@@ -1069,7 +1179,7 @@
 						}
 					}
 				},
-				"description": "가게의 미션을 내 '도전 중인 미션' 목록에 추가합니다.",
+				"description": "가게의 미션을 내 '도전 중인 미션' 목록에 추가합니다. (로그인 필요)",
 				"summary": "미션 도전 시작",
 				"tags": [
 					"Mission"
@@ -1111,24 +1221,25 @@
 								}
 							}
 						}
+					},
+					"401": {
+						"description": "인증 실패",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
 					}
 				},
-				"description": "내가 현재 도전 중인 미션 목록을 cursor 기반 페이지네이션으로 조회합니다.",
+				"description": "내가 현재 도전 중인 미션 목록을 cursor 기반 페이지네이션으로 조회합니다. (로그인 필요)",
 				"summary": "내 도전 중인 미션 목록 조회",
 				"tags": [
 					"Mission"
 				],
 				"security": [],
 				"parameters": [
-					{
-						"in": "query",
-						"name": "userId",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
 					{
 						"in": "query",
 						"name": "cursor",

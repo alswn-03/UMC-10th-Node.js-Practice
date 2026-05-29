@@ -37,18 +37,11 @@ export interface AddMissionResponse {
 }
 
 // -- 1-4. 가게의 미션을 '도전 중인 미션'에 추가하기
+// userId는 JWT에서 추출하므로 요청 body에서 제거
 export interface ChallengeMissionRequest {
-  /** 도전하는 유저 ID */
-  userId: number;
   /** 도전할 미션 ID */
   missionId: number;
 }
-export const bodyToChallengeMission = (body: ChallengeMissionRequest) => {
-  return {
-    userId: body.userId,
-    missionId: body.missionId,
-  };
-};
 
 /**
  * 미션 도전 성공 응답.

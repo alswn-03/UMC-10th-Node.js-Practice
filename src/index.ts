@@ -68,10 +68,25 @@ app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형
 app.use(morgan('dev'));  // 로그 포맷: dev
 app.use(cookieParser()); // ❇️ 요청에 포함된 쿠키 정보가 자동으로 파싱되어 req.cookies 객체에 저장
 
+// ❇️ 9주차 : passport.initialize()는 반드시 라우트 등록 전에 위치해야 한다
+app.use(passport.initialize());
+
+// JWT 인증 미들웨어
+const isLogin = passport.authenticate('jwt', { session: false });
+
 // 4️⃣ API 라우트 정의
 
 // ❇️ 7주차 tsoa 방식으로 라우트 등록하기
-const router = express.Router(); // ❇️ 7주차
+const router = express.Router();
+
+// 로그인이 필요한 경로에 isLogin 미들웨어를 tsoa 라우트 등록 전에 먼저 적용
+// → 해당 경로에 요청이 오면 isLogin이 먼저 JWT를 검증하고, req.user에 유저 정보를 담아준다
+router.use('/me', isLogin);                   // GET /me/missions, GET /me/reviews
+router.post('/stores/reviews', isLogin);      // 리뷰 작성
+router.post('/stores/missions', isLogin);     // 미션 추가
+router.post('/missions/challenge', isLogin);  // 미션 도전
+router.patch('/users/me', isLogin);           // 프로필 수정
+
 RegisterRoutes(router); // tsoa로 생성된 라우트 등록 함수 호출
 
 app.use("/api/v1", router); // 등록된 라우트를 Express 앱에 적용 (공통 URL 경로 설정)
@@ -121,10 +136,7 @@ const swaggerFile = JSON.parse( // 1. TSOA가 생성한 swagger.json 읽어오�
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerFile)); // 2. Swagger UI 연결
 
-
-// ❇️ 9주차
-app.use(passport.initialize());
-
+// ❇️ 9주차 : 소셜 로그인 - 구글
 // ✅ Google 로그인 시작: 브라우저에서 이 URL에 접속하면 Google 동의 화면으로 이동
 app.get(
   '/oauth2/login/google',
@@ -140,10 +152,6 @@ app.get(
     res.status(200).json(req.user);
   }
 );
-
-// 보호된 라우트(Test) 만들고 `isLogin` 미들웨어 적용
-// -> 이제 7주차의 `isLogin` 역할을 `passport.authenticate('jwt', ...)` 가 대신
-const isLogin = passport.authenticate('jwt', { session: false });
 
 app.get('/mypage', isLogin, (req, res) => {
 

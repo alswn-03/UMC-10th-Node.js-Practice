@@ -60,6 +60,32 @@ export interface UserSignUpResponse {
   /** 선택한 선호 카테고리 이름 배열 (예: ["한식", "중식"]) */
   preferCategory: string[];
 }
+
+// Google 로그인 유저처럼 처음에 정보를 채우지 못한 경우 사용하는 프로필 수정 DTO
+// 모든 필드가 선택(?)이라 원하는 필드만 골라서 수정할 수 있다
+export interface UserUpdateRequest {
+  /** 유저 이름 */
+  name?: string;
+  /** 성별 (예: "male", "female") */
+  gender?: string;
+  /** 생년월일 (예: "1999-01-01") */
+  birth?: Date;
+  /** 기본 주소 */
+  address?: string;
+  /** 상세 주소 */
+  detailAddress?: string;
+  /** 휴대폰 번호 (예: "010-1234-5678") */
+  phoneNumber?: string;
+}
+
+export interface UserUpdateResponse {
+  /** 유저 ID */
+  id: number;
+  /** 유저 이메일 */
+  email: string;
+  /** 유저 이름 */
+  name: string;
+}
 /* ❇️ 7주차 
 responseFromUser 변환 함수의 역할은 @Body 데코레이터가 하던 역할과는 다릅니다.
 - @Body 데코레이터는 클라이언트로부터 들어오는 요청 데이터를 서버 내부에서 쓰기 좋게 변환하는 역할을 합니다. 예를 들어, JSON 형태의 요청 본문을 UserSignUpRequest 타입으로 변환하는 역할을 합니다.

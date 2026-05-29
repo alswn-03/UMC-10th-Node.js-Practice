@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Path, Post, Query, Response, Route, Tags } from "tsoa";
+import { Body, Controller, Get, Path, Post, Query, Request, Response, Route, Tags } from "tsoa";
+import type { Request as ExpressRequest } from "express";
 
 import {
   AddReviewRequest,
@@ -10,8 +11,6 @@ import { listStoreReviews, listMyReviews, createReview } from "../services/revie
 import { ApiResponse, ErrorResponse, success } from "../../../common/responses/response.js";
 
 
-// ✅ 1-1 특정 가게의 리뷰 목록 조회 & 2. 리뷰 작성하기
-// /stores 경로를 공유하는 리뷰 관련 엔드포인트를 하나의 컨트롤러로 묶음
 @Route("stores")
 @Tags("Review")
 export class StoreReviewController extends Controller {
@@ -29,34 +28,38 @@ export class StoreReviewController extends Controller {
   }
 
   /**
-   * 특정 가게에 리뷰를 작성합니다.
+   * 특정 가게에 리뷰를 작성합니다. (로그인 필요)
    * @summary 리뷰 작성
    */
   @Post("reviews")
+  @Response<ErrorResponse>(401, "인증 실패")
   @Response<ErrorResponse>(400, "존재하지 않는 가게")
   public async handleAddReview(
+    @Request() request: ExpressRequest,
     @Body() requestBody: AddReviewRequest
   ): Promise<ApiResponse<AddReviewResponse>> {
-    const review = await createReview(bodyToReview(requestBody));
+    // isLogin 미들웨어가 req.user에 Prisma User 객체를 담아준다
+    const userId = Number((request.user as { id: bigint }).id);
+    const review = await createReview(bodyToReview(requestBody), userId);
     return success({ ...review, reviewId: Number(review.reviewId) });
   }
 }
 
 
-// ✅ 1-2 내가 작성한 리뷰 목록 조회하기
 @Route("me")
 @Tags("Review")
 export class MeReviewController extends Controller {
   /**
-   * 내가 작성한 리뷰 목록을 cursor 기반 페이지네이션으로 조회합니다.
+   * 내가 작성한 리뷰 목록을 cursor 기반 페이지네이션으로 조회합니다. (로그인 필요)
    * @summary 내 리뷰 목록 조회
    */
   @Get("reviews")
-  @Response<ErrorResponse>(400, "존재하지 않는 사용자")
+  @Response<ErrorResponse>(401, "인증 실패")
   public async handleListMyReviews(
-    @Query() userId: number,
+    @Request() request: ExpressRequest,
     @Query() cursor?: number
   ): Promise<ReviewListResponse> {
+    const userId = Number((request.user as { id: bigint }).id);
     return listMyReviews(userId, cursor ?? 0);
   }
 }
