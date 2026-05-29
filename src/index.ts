@@ -19,13 +19,17 @@ import { handleListStoreReviews, handleAddReview, handleListMyReviews } from "./
 import { handleAddMission, handleChallengeMission, handleGetMissionsByStore, handleGetMissionByUser } from "./modules/missions/controllers/mission.controller.js";
 */
 
-// ❇️ 8주차
+// ❇️ 8주차 : swagger
 import swaggerUi from "swagger-ui-express";
 import cors from "cors"; // 미들웨어
 
 import path from "path";
 import fs from "fs";
 
+// ❇️ 9주차 : auth
+import passport from "passport";
+import { googleStrategy, jwtStrategy } from "./auth.config.js";
+import { prisma } from "./db.config.js";
 
 
 /**
@@ -38,6 +42,11 @@ import fs from "fs";
 // 1️⃣ 환경 변수 설정
 // .env 파일에서 환경 변수를 로드합니다 (포트 번호, DB 연결 정보 등)
 dotenv.config();
+
+// ❇️ passport 라이브러리에 로그인 방식을 등록
+passport.use(googleStrategy); // Google 로그인 방식을 등록
+passport.use(jwtStrategy); // jwtStrategy 등록
+
 
 // 2️⃣ Express 앱 초기화
 // Express 서버 인스턴스를 생성하고 포트를 설정합니다
@@ -59,11 +68,10 @@ app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형
 app.use(morgan('dev'));  // 로그 포맷: dev
 app.use(cookieParser()); // ❇️ 요청에 포함된 쿠키 정보가 자동으로 파싱되어 req.cookies 객체에 저장
 
-
 // 4️⃣ API 라우트 정의
 
 // ❇️ 7주차 tsoa 방식으로 라우트 등록하기
-const router = express.Router();
+const router = express.Router(); // ❇️ 7주차
 RegisterRoutes(router); // tsoa로 생성된 라우트 등록 함수 호출
 
 app.use("/api/v1", router); // 등록된 라우트를 Express 앱에 적용 (공통 URL 경로 설정)
@@ -112,6 +120,47 @@ const swaggerFile = JSON.parse( // 1. TSOA가 생성한 swagger.json 읽어오�
 );
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerFile)); // 2. Swagger UI 연결
+
+
+// ❇️ 9주차
+app.use(passport.initialize());
+
+// ✅ Google 로그인 시작: 브라우저에서 이 URL에 접속하면 Google 동의 화면으로 이동
+app.get(
+  '/oauth2/login/google',
+  passport.authenticate('google', { scope: ['email', 'profile'] })
+);
+
+// ✅ Google 로그인 콜백: 동의 완료 후 Google이 이 URL로 리다이렉트
+app.get(
+  '/oauth2/callback/google',
+  passport.authenticate('google', { session: false, failureRedirect: '/' }),
+  (req, res) => {
+    // googleStrategy의 cb(null, tokens) 에서 넘긴 tokens 객체가 req.user에 담김
+    res.status(200).json(req.user);
+  }
+);
+
+// 보호된 라우트(Test) 만들고 `isLogin` 미들웨어 적용
+// -> 이제 7주차의 `isLogin` 역할을 `passport.authenticate('jwt', ...)` 가 대신
+const isLogin = passport.authenticate('jwt', { session: false });
+
+app.get('/mypage', isLogin, (req, res) => {
+
+  if (!req.user) {
+    res.status(401).json({ message: "인증 실패" });
+    return;
+  }
+
+  // passport-jwt가 req.user에 Prisma User 객체를 담아주지만,
+  // Express 타입은 이를 모르므로 명시적으로 캐스팅
+  // id는 BigInt라 JSON 직렬화가 안 되므로 Number()로 변환
+  const user = req.user as { id: bigint; name: string; email: string };
+  res.status(200).json({
+    message: `인증 성공! ${user.name}님의 마이페이지입니다.`,
+    user: { ...user, id: Number(user.id) },
+  });
+});
 
 
 // 6️⃣ 서버 실행
